@@ -73,12 +73,13 @@ export class TranspilerStep {
   // TODO(martinprobst): This belongs to module.ts, refactor.
   getLibraryName(): string { return this.transpiler.getLibraryName(); }
 
-  private static DART_TYPES: {[k: string]: string} = {
+  private static TS_TO_DART_TYPENAMES: {[k: string]: string} = {
     'Promise': 'Future',
     'Observable': 'Stream',
     'ObservableController': 'StreamController',
     'Date': 'DateTime',
-    'StringMap': 'Map'
+    'StringMap': 'Map',
+    'Array': 'List',
   };
 
   visitTypeName(typeName: ts.EntityName) {
@@ -87,8 +88,8 @@ export class TranspilerStep {
       return;
     }
     var identifier = ident(typeName);
-    if (TranspilerStep.DART_TYPES.hasOwnProperty(identifier)) {
-      identifier = TranspilerStep.DART_TYPES[identifier];
+    if (TranspilerStep.TS_TO_DART_TYPENAMES.hasOwnProperty(identifier)) {
+      identifier = TranspilerStep.TS_TO_DART_TYPENAMES[identifier];
     }
     this.emit(identifier);
   }
