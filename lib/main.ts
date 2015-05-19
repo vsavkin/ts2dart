@@ -20,16 +20,25 @@ import TypeTranspiler = require('./type');
 import LiteralTranspiler = require('./literal');
 
 export interface TranspilerOptions {
-  // Fail on the first error, do not collect multiple. Allows easier debugging as stack traces lead
-  // directly to the offending line.
+  /**
+   * Fail on the first error, do not collect multiple. Allows easier debugging as stack traces lead
+   * directly to the offending line.
+   */
   failFast?: boolean;
-  // Whether to generate 'library a.b.c;' names from relative file paths.
+  /** Whether to generate 'library a.b.c;' names from relative file paths. */
   generateLibraryName?: boolean;
-  // Whether to generate source maps.
+  /** Whether to generate source maps. */
   generateSourceMap?: boolean;
-  // A base path to relativize absolute file paths against. This is useful for library name
-  // generation (see above) and nicer file names in error messages.
+  /**
+   * A base path to relativize absolute file paths against. This is useful for library name
+   * generation (see above) and nicer file names in error messages.
+   */
   basePath?: string;
+  /**
+   * Translate calls to builtins, i.e. seemlessly convert from `Array` to `List`, and convert the
+   * corresponding methods. Requires type checking.
+   */
+  translateBuiltins?: boolean;
 }
 
 var OPTIONS: ts.CompilerOptions = {
@@ -48,6 +57,7 @@ export class Transpiler {
   private errors: string[] = [];
 
   private transpilers: base.TranspilerStep[];
+  private typeChecker: ts.TypeChecker;
 
   constructor(private options: TranspilerOptions = {}) {
     this.transpilers = [
@@ -74,6 +84,9 @@ export class Transpiler {
     }
     var destinationRoot = destination || this.options.basePath || '';
     var program = ts.createProgram(fileNames, OPTIONS, host);
+    if (this.options.translateBuiltins) {
+      this.typeChecker = program.getTypeChecker();
+    }
     program.getSourceFiles()
         // Do not generate output for .d.ts files.
         .filter((sourceFile: ts.SourceFile) => !sourceFile.fileName.match(/\.d\.ts$/))
@@ -86,6 +99,9 @@ export class Transpiler {
   }
 
   translateProgram(program: ts.Program): string {
+    if (this.options.translateBuiltins) {
+      this.typeChecker = program.getTypeChecker();
+    }
     var src = program.getSourceFiles()
                   .filter((sourceFile: ts.SourceFile) => !sourceFile.fileName.match(/\.d\.ts$/) &&
                                                          !!sourceFile.fileName.match(/\.[jt]s$/))
@@ -122,6 +138,10 @@ export class Transpiler {
       getCurrentDirectory: () => '',
       getNewLine: () => '\n'
     };
+  }
+
+  getTypeChecker(): ts.TypeChecker {
+    return this.typeChecker;
   }
 
   // Visible for testing.

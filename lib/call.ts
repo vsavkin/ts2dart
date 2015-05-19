@@ -41,6 +41,14 @@ class CallTranspiler extends base.TranspilerStep {
 
   private visitCall(c: ts.CallExpression) {
     var fnName = base.ident(c.expression);
+
+    var tc = this.typeChecker();
+    var sig = tc.getResolvedSignature(c);
+    console.log('call:', c.getText(), 'sig:', sig.getDeclaration());
+    if (sig && sig.declaration) {
+      console.log(sig);
+    }
+
     if (fnName === 'CONST_EXPR') {
       // The special function CONST_EXPR translates to Dart's const expressions.
       if (c.arguments.length !== 1) this.reportError(c, 'CONST_EXPR takes exactly one argument');

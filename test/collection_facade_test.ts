@@ -2,7 +2,7 @@
 import {expectTranslate, expectErroneousCode} from './test_support';
 
 describe('collection façade', () => {
-  it('translates array operations to dartisms', () => {
+  it.only('translates array operations to dartisms', () => {
     expectTranslate('var x: Array<number> = []; x.push(1);')
         .to.equal(' List < num > x = [ ] ; x . add ( 1 ) ; ');
   });

@@ -73,6 +73,12 @@ export class TranspilerStep {
   // TODO(martinprobst): This belongs to module.ts, refactor.
   getLibraryName(): string { return this.transpiler.getLibraryName(); }
 
+  typeChecker(): ts.TypeChecker {
+    var tc = this.transpiler.getTypeChecker();
+    if (!tc) throw new Error('TypeChecker requested, but none available');
+    return tc;
+  }
+
   private static TS_TO_DART_TYPENAMES: {[k: string]: string} = {
     'Promise': 'Future',
     'Observable': 'Stream',

@@ -48,6 +48,6 @@ export function parseProgram(contents: string, fileName = 'file.ts'): ts.Program
 
 export function translateSource(contents: string, failFast = true): string {
   var program = parseProgram(contents);
-  var transpiler = new main.Transpiler({failFast});
+  var transpiler = new main.Transpiler({failFast, translateBuiltins: true});
   return transpiler.translateProgram(program);
 }
